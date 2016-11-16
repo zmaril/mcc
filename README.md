@@ -1,10 +1,20 @@
 # instaparse-c
 
-A Clojure library designed to ... well, that part is up to you.
+Parse C with Instaparse.
 
 ## Usage
 
 FIXME
+
+## Development 
+
+`lein test` runs the tests. It will download `openssh-portable` to the
+`dev-resources/corpus` directory automatically.
+
+Recommend that you run `lein checkout instaparse` and change the following line. 
+
+https://github.com/timvisher/lein-checkout for installation instructions
+
 
 ## License
 
