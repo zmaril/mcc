@@ -19,3 +19,10 @@
            (is (not (insta/failure? (parse-file f)))))))
 
 (parse-file "dev-resources/corpus/openssh-portable/scp.c" )
+
+(def t
+"if (a->num == 0)
+		fatal(\"do_local_cmd: no arguments\");
+  "
+
+  )
