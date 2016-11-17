@@ -8,9 +8,7 @@
   {:c11/comment (altnt :c11.comment/mutliple-lines
                        :c11.comment/single-line)
    :c11.comment/mutliple-lines
-   (cat (hs "/*")
-        (regexp "([\\s\\S])*?(?=\\*/)")
-        (hs "*/"))
+   (regexp "/\\*([\\s\\S])*?(?=\\*/)\\*/")
    :c11.comment/single-line
    (cat (hs "//")
         (regexp ".*")
