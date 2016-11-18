@@ -25,7 +25,7 @@
    :c11.function/definition
    (cat (nt :c11.function/declaration)
         (hs "{")
-        (nt :c11)
+        (star (nt :c11/statement))
         (hs "}"))
    :c11.function/call
    (cat (nt :c11/symbol)

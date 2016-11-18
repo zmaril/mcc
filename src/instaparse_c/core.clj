@@ -15,11 +15,13 @@
    [instaparse-c.assignment :refer [assignment]]
    ))
 
+;;Symbols serve both macros and the c language proper
 (def symbol
   {:c11/symbol (cat (neg (nt :c11/reserved))
                     (regexp "[a-zA-Z_][a-zA-Z_0-9]*"))
    :c11/reserved
    (alt (nt :c11/data-type)
+        (alts "extern" "void" "if" "NULL")
         )})
 
 (def data-type
@@ -34,10 +36,11 @@
    :c11.data-type/int (string "int")})
 
 (def literal
-  {:c11/literal (altnt :c11.literal/int :c11.literal/macro :c11.literal/string)
+  {:c11/literal
+   (altnt :c11.literal/int :c11.literal/string :c11.literal/null)
    :c11.literal/string (regexp "\"[^\"]*\"")
-   :c11.literal/macro (regexp "[A-Z_]+")
-   :c11.literal/int (regexp "-?[0-9]+")})
+   :c11.literal/int (regexp "-?[0-9]+")
+   :c11.literal/null (string "NULL")})
 
 
 (def language '[

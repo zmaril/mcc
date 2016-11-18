@@ -11,7 +11,7 @@
     (parens (nt :c11/expression))
     (alt (nt :c11/statement)
          (cat (hs "{")
-              (nt :c11)
+              (star (nt :c11/statement))
               (hs "}")))
     )
    })
