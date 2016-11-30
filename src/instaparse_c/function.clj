@@ -5,10 +5,9 @@
    [instaparse-c.util :refer :all]))
 
 (def function 
-  {:c11/function
+  {:c11.statement/function
    (altnt :c11.function/declaration
-          :c11.function/definition
-          :c11.function/call)
+          :c11.function/definition)
    :c11.function/argument
    (cat (altnt :c11/symbol :c11/data-type)
         (opt (string "*"))
@@ -26,9 +25,4 @@
    (cat (nt :c11.function/declaration)
         (hs "{")
         (star (nt :c11/statement))
-        (hs "}"))
-   :c11.function/call
-   (cat (nt :c11/symbol)
-        (parens (list-of (nt :c11/expression)))
-        (opt (string ";")))
-   })
+        (hs "}"))})

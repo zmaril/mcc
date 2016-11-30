@@ -1,11 +1,12 @@
 (ns instaparse-c.variable
-  (:refer-clojure :exclude [cat comment])
+  (:refer-clojure :exclude [cat comment string?])
   (:require 
    [instaparse.combinators :refer :all]
    [instaparse-c.util :refer :all]))
 
 (def variable 
-  {:c11/variable (altnt :c11.variable/declaration :c11.variable/definition)
+  {:c11.statement/variable
+   (altnt :c11.variable/declaration :c11.variable/definition)
    ;;For lack of a better term, using `description` here to mean a declaration
    ;; but not a statement. Makes code reuse easier and removes ambiguity.
    :c11.variable/description
@@ -28,6 +29,6 @@
    :c11.variable/definition
    (cat (nt :c11.variable/description)
         (hs "=")
-        (altnt :c11/symbol :c11/literal)
+        (altnt :c11/expression)
         (hs ";"))
    })

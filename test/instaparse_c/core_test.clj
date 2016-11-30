@@ -22,13 +22,11 @@
 ;(parse-file "dev-resources/corpus/openssh-portable/scp.c" )
 
 (def t
-  "if (d) {k();
-	}")
+  "if (a->num == 0)
+		fatal(\"do_local_cmd: no arguments\");")
 
 (def s
-  "
-		while (a == -1 && errno == EINTR);
-")
+  "a == -1 && a;")
 
 (def lines
   (->> "dev-resources/corpus/openssh-portable/scp.c"
@@ -55,5 +53,5 @@
         (clojure.string/join "\n")
         (println))))
 
-(count  (insta/parses c/parse t :unhide :all))
+#_(count  (insta/parses c/parse t :unhide :all))
 #_(line-by-line 150 170)

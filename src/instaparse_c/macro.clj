@@ -1,5 +1,5 @@
 (ns instaparse-c.macro
-  (:refer-clojure :exclude [cat comment])
+  (:refer-clojure :exclude [cat comment string?])
   (:require 
    [instaparse.combinators :refer :all]
    [instaparse-c.util :refer :all]))
@@ -14,17 +14,17 @@
    :c11.macro/if (cat
                   (hs "#" "if")
                   (nt :c11.macro/expr)
-                  (nt :c11/statement)
+                  (nt :c11/statements)
                   (cat? (hs "#" "else")
-                        (nt :c11))
+                        (nt :c11/statements))
                   (hs "#" "endif"))
 
    :c11.macro/ifdef (cat
                      (hs "#" "ifdef")
                      (nt :c11.macro/expr)
-                     (nt :c11/statement)
+                     (nt :c11/statements)
                      (cat? (hs "#" "else")
-                           (nt :c11/statement))
+                           (nt :c11/statements))
                      (hs "#" "endif"))
 
    :c11.macro/include
@@ -60,3 +60,5 @@
 
    :c11.macro/value
    (regexp "[0-9]+")})
+
+;;TODO remove cruft from precendece stuff

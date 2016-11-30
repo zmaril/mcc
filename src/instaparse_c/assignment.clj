@@ -1,5 +1,5 @@
 (ns instaparse-c.assignment
-  (:refer-clojure :exclude [cat comment function for])
+  (:refer-clojure :exclude [cat comment function for string?])
   (:require 
    [instaparse.combinators :refer :all]
    [instaparse-c.util :refer :all]))

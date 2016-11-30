@@ -1,5 +1,5 @@
 (ns instaparse-c.comment
-  (:refer-clojure :exclude [cat comment])
+  (:refer-clojure :exclude [cat comment string?])
   (:require 
    [instaparse.combinators :refer :all]
    [instaparse-c.util :refer :all]))

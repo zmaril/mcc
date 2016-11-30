@@ -1,5 +1,5 @@
 (ns instaparse-c.core
-  (:refer-clojure :exclude [cat comment symbol if while for])
+  (:refer-clojure :exclude [cat comment symbol if while for string?])
   (:require 
    [instaparse.core :as insta]
    [instaparse.combinators :refer :all]
@@ -11,7 +11,7 @@
    [instaparse-c.if :refer [if]]
    [instaparse-c.for :refer [for]]
    [instaparse-c.while :refer [while]]
-   [instaparse-c.expression :refer [expression]]
+   [instaparse-c.expression :refer [expression remove-cruft]]
    [instaparse-c.assignment :refer [assignment]]
    ))
 
@@ -39,7 +39,7 @@
   {:c11/literal
    (altnt :c11.literal/int :c11.literal/string :c11.literal/null)
    :c11.literal/string (regexp "\"[^\"]*\"")
-   :c11.literal/int (regexp "-?[0-9]+")
+   :c11.literal/int (regexp "[0-9]+")
    :c11.literal/null (string "NULL")})
 
 
@@ -48,24 +48,26 @@
                 literal
                 symbol
                 expression
+                comment
+                macro
                 ])
 
 (def statements '[
-                  comment
-                  macro
                   variable
                   function
                   if
                   for
                   while
-                  assignment
+                  expression
                   ])
 
 (def c11-grammar
   (let [statement-keywords
-        (map #(keyword (str "c11/" (name %))) statements)
+        (map #(keyword (str "c11.statement/" (name %))) statements)
         alts (apply altnt statement-keywords)
-        starter {:c11 (star (nt :c11/statement))
+        starter {:c11/start (nt :c11/statements)
+                 :c11/statements
+                 (star (altnt :c11/statement :c11/comment :c11/macro))
                  :c11/statement alts}]
     (apply merge
            (concat [starter]
@@ -77,5 +79,14 @@
                 :start :whitespace))
 
 (def parse
-  (insta/parser c11-grammar :start :c11 :auto-whitespace whitespace))
+  (insta/parser c11-grammar :start :c11/start :auto-whitespace whitespace))
 
+(defn clean-parse [& args]
+  (let [parsed (apply parse args)]
+    (if (insta/failure? parsed)
+      parsed
+      (remove-cruft parsed))))
+
+(defn clean-parses [& args]
+  (let [parsed (apply insta/parses (cons parse args))]
+    (map remove-cruft parsed)))
