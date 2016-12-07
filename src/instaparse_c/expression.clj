@@ -10,9 +10,20 @@
    (nt next-tag)
    (cat? c (nt next-tag))))
 
+
+(defn right-to-left* [next-tag c]
+  (cat
+   (nt next-tag)
+   (star (cat c (nt next-tag)))))
+
 (defn left-to-right [next-tag c]
   (cat
    (cat? (nt next-tag) c)
+   (nt next-tag)))
+
+(defn left-to-right* [next-tag c]
+  (cat
+   (star (cat (nt next-tag) c))
    (nt next-tag)))
 
 (defn prefix-unary [tag s]
@@ -26,12 +37,13 @@
 (def expression 
   {:c11/expression (nt :c11/comma) 
    :c11.statement/expression (cat (nt :c11/expression) (string ";") )
-   :c11/comma (nt :c11.expression/assignment) ;;Unsure what commas are for
+   :c11/comma
+   (left-to-right* :c11.expression/assignment (hs ","))
 
    :c11.expression/assignment 
-   (right-to-left
+   (left-to-right*
     :c11.expression/ternary
-    (alts "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" "&=" "^=" "|=" ))
+    (alts "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" "&=" "^=" "|="))
    
    :c11.expression/ternary 
    (cat
@@ -43,16 +55,16 @@
      (nt :c11.expression.logical/or)))
 
    :c11.expression.logical/or
-   (left-to-right :c11.expression.logical/and (alts "or" "||"))
+   (left-to-right* :c11.expression.logical/and (alts "or" "||"))
 
    :c11.expression.logical/and 
-   (left-to-right :c11.expression.bitwise/or (alts "and" "&&"))
+   (left-to-right* :c11.expression.bitwise/or (alts "and" "&&"))
 
    :c11.expression.bitwise/or 
-   (left-to-right :c11.expression.bitwise/xor (string "|"))
+   (left-to-right* :c11.expression.bitwise/xor (string "|"))
 
    :c11.expression.bitwise/xor 
-   (left-to-right :c11.expression.bitwise/and (string "^"))
+   (left-to-right* :c11.expression.bitwise/and (string "^"))
 
    :c11.expression.bitwise/and 
    (cat
@@ -60,56 +72,67 @@
     (nt :c11.expression/equality))
 
    :c11.expression/equality
-   (left-to-right :c11.expression/comparsion (alts "==" "!="))
+   (left-to-right* :c11.expression/comparsion (alts "==" "!="))
 
    :c11.expression/comparsion
-   (left-to-right :c11.expression.bitwise/shift (alts ">" ">=" "<="  "<"))
+   (left-to-right* :c11.expression.bitwise/shift (alts ">" ">=" "<="  "<"))
 
    :c11.expression.bitwise/shift 
-   (left-to-right :c11.expression.arthimetic/addition (alts "<<" ">>"))
+   (left-to-right* :c11.expression.arthimetic/addition (alts "<<" ">>"))
 
    :c11.expression.arthimetic/addition 
-   (left-to-right :c11.expression.arthimetic/subtraction (string "+"))
+   (left-to-right* :c11.expression.arthimetic/subtraction (string "+"))
 
    :c11.expression.arthimetic/subtraction
-   (left-to-right :c11.expression.arthimetic/multiplication (string "-"))
+   (left-to-right* :c11.expression.arthimetic/multiplication (string "-"))
 
    :c11.expression.arthimetic/multiplication
-   (left-to-right :c11.expression.arthimetic/division (string "*"))
+   (left-to-right* :c11.expression.arthimetic/division (string "*"))
 
    :c11.expression.arthimetic/division
-   (left-to-right :c11.expression.arthimetic/modulo (string "/"))
+   (left-to-right* :c11.expression.arthimetic/modulo (string "/"))
 
    :c11.expression.arthimetic/modulo
-   (left-to-right :c11.expression/prefix-increment (string "%"))
+   (left-to-right* :c11.expression/prefix-operation (string "%"))
 
-   :c11.expression/prefix-increment
-   (prefix-unary :c11.expression/prefix-decrement "++")
+   ;;To allow unary operations to commute while still using the parsing tree
+   ;;method, and while also avoiding an infinite loop with :c11/expression at
+   ;;the top and bottom of the tree, we consider all unary operators to be the
+   ;;same non terminal while parsing.
+   ;;TODO: Have a transformation that cleans this up and introduces better
+   ;;labels, as one would expect.
+   :c11.expression/prefix-operation
+   (cat
+    (star
+     (alt 
+      (alts "++" "--" "!" "~" "*" "&")
+      (cat (string "+") (neg (string "+")))
+      (cat (string "-") (neg (string "-")))
 
-   :c11.expression/prefix-decrement
-   (prefix-unary :c11.expression/unary-plus "--")
-
-   :c11.expression/unary-plus
-   (prefix-unary :c11.expression/unary-minus "+")
-
-   :c11.expression/unary-minus
-   (prefix-unary :c11.expression.logical/not "-")
-
-   :c11.expression.logical/not
-   (prefix-unary :c11.expression.bitwise/not "!")
-
-   :c11.expression.bitwise/not
-   (prefix-unary :c11.expression/type "~")
-
-   :c11.expression/type (nt :c11.expression/indirection)
-   :c11.expression/indirection (nt :c11.expression/address-of)
-   :c11.expression/address-of
-   (prefix-unary :c11.expression/size-of "&")
-   :c11.expression/size-of (nt :c11.expression/postfix-increment)
+      ;;TODO: how does the * character interact with data-type declarations? 
+      ;;Cast
+      (parens (cat (nt :c11/data-type) (string? "*")))
+      ))
+    (nt :c11.expression/size-of))
    
-;   [] 	Array subscripting
-;   . 	Element selection by reference
-;   -> 	Element selection through pointer
+
+   :c11.expression/size-of
+   (cat (string? "sizeof") (nt :c11.expression/array-subscript))
+
+
+   ;;TODO:Cruft does weird things here
+   :c11.expression/array-subscript
+   (cat (nt :c11.expression.member/select-through-pointer)
+        (cat?
+         (string "[")
+         (nt? :c11/expression)
+         (string "]")))
+
+   :c11.expression.member/select-through-pointer
+   (left-to-right :c11.expression.member/select-by-reference (string "->"))
+
+   :c11.expression.member/select-by-reference
+   (left-to-right :c11.expression/postfix-increment (string "."))
 
    :c11.expression/postfix-increment
    (postfix-unary :c11.expression/postfix-decrement "++")
@@ -118,12 +141,21 @@
    (postfix-unary :c11.expression/bottom "--")
 
    :c11.expression/bottom
-   (altnt :c11/literal :c11/symbol :c11.expression/function-call)
+   (altnt :c11/literal :c11/symbol :c11.expression/function-call
+          :c11.expression/parens)
+
+
+   ;;TODO: Inside of a function call, comma operators don't exist. By skipping
+   ;;past comma as the first tip top part of the expression precedence tree, we
+   ;;lose [:c11/expression] for each parse. One option is to remove the comma
+   ;;operator from the parse tree and have it be it's own thing. Another option
+   ;;is to have transform at the end that wraps expressions inside of function
+   ;;calls.
 
    :c11.expression/function-call
    (alt 
     (cat (nt :c11/symbol)
-         (parens (list-of (nt :c11/expression)))))
+         (parens (list-of? (nt :c11.expression/assignment)))))
 
    :c11.expression/parens
    (parens (nt :c11/expression))
@@ -168,6 +200,10 @@
    :c11.expression/unary-minus
    :c11.expression/unary-plus
    :c11.expression/ternary
+   :c11.expression/array-subscript
+   :c11.expression.member/select-through-pointer
+   :c11.expression.member/select-by-reference
+   :c11.expression/prefix-operation
    :c11/comma])
 
 (def cruft

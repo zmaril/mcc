@@ -9,11 +9,11 @@
    (cat
     (hs "for")
     (parens
-     (cat (nt :c11/expression)
+     (cat (nt? :c11/expression)
           (string ";")
-          (nt :c11/expression)
+          (nt? :c11/expression)
           (string ";")
-          (nt :c11/expression)))
+          (nt? :c11/expression)))
     (alt (nt :c11/statement)
          (cat (hs "{")
               (nt :c11/statements)

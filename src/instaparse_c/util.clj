@@ -8,10 +8,14 @@
 (defn alts [& ss]
   (apply alt (map string ss)))
 
+(def alts?
+  (comp opt alts))
+
 (defn hs [& ss]
   (hide (cat (apply cat (map string ss)))))
 
 (def string? (comp opt string))
+(def nt? (comp opt nt))
 
 (defn cat? [& cs]
   (opt (apply cat cs)))
@@ -22,6 +26,14 @@
 (defn parens [& cs]
   (cat (hs "(") (apply cat cs) (hs ")")))
 
+(defn brackets [& cs]
+  (cat (hs "{") (apply cat cs) (hs "}")))
+
+(defn brackets? [& cs]
+  (opt (apply brackets cs)))
+
 (defn list-of [c]
-  (opt (cat c (star (cat (hs ",") c))))
-  )
+  (cat c (star (cat (hs ",") c))))
+
+(defn list-of? [c]
+  (opt (list-of c)))

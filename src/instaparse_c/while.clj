@@ -9,7 +9,7 @@
    (cat
     (hs "while")
     (parens (nt :c11/expression))
-    (alt? (nt :c11/statement)
+    (alt (nt :c11/statement)
           (cat (hs "{")
                (star (nt :c11/statement))
                (hs "}"))))

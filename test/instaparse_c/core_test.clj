@@ -4,6 +4,7 @@
             [instaparse.core :as insta]
             [clojure.data :as data]
             [clojure.java.io :refer [file]]
+            [clojure.pprint :refer [pprint]]
             [me.raynes.fs :refer [glob]]))
 (defn walk [dirpath pattern]
   (doall (filter #(re-matches pattern (.getName %))
@@ -19,14 +20,6 @@
          (testing (str "Testing: " (.getPath f))
            (is (not (insta/failure? (parse-file f)))))))
 
-;(parse-file "dev-resources/corpus/openssh-portable/scp.c" )
-
-(def t
-  "if (a->num == 0)
-		fatal(\"do_local_cmd: no arguments\");")
-
-(def s
-  "a == -1 && a;")
 
 (def lines
   (->> "dev-resources/corpus/openssh-portable/scp.c"
@@ -41,8 +34,14 @@
 
 (defn line-by-line [start stop]
   (doseq [i (range start stop)]
-    (let [parses  (insta/parses c/parse (up-to i) :unhide :all)]
-      (println i (count parses)))))
+    (let [parses (atom nil)
+          timed
+          (with-out-str
+            (time
+             (reset! parses (insta/parses c/parse (up-to i) :unhide :all))))
+          parses @parses]
+      (when (not= 0 (count parses))
+        (println i (count parses) timed)))))
 
 (defn show
   ([n] (show n (inc n)) )
@@ -53,5 +52,26 @@
         (clojure.string/join "\n")
         (println))))
 
-#_(count  (insta/parses c/parse t :unhide :all))
+(def t
+  "
+		if (a) {
+			if (a)
+#ifdef A
+				if (a) {
+#else
+				if (a) {
+#endif 
+				  a = a;	
+				}
+		}
+  ")
+
+#_(c/parse t)
+#_(count  (c/clean-parses t :unhide :all))
 #_(line-by-line 150 170)
+
+#_(parse-file "dev-resources/corpus/openssh-portable/scp.c" )
+
+;(line-by-line 0 200)
+
+

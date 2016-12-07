@@ -9,9 +9,17 @@
    (cat
     (hs "if")
     (parens (nt :c11/expression))
-    (alt (nt :c11/statement)
-         (cat (hs "{")
-              (star (nt :c11/statement))
-              (hs "}")))
-    )
-   })
+    (nt :c11.if/body)
+    (star (cat
+           (string "else if")
+           (parens (nt :c11/expression))
+           (nt :c11.if/body)))
+    (cat? (string "else")
+          (nt :c11.if/body)))
+   :c11.if/body
+   (alt
+    (nt :c11/macro)
+    (nt :c11/statement)
+    (cat (hs "{")
+         (star (nt :c11/statement))
+         (hs "}")))})

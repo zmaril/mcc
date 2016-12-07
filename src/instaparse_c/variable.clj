@@ -10,12 +10,10 @@
    ;;For lack of a better term, using `description` here to mean a declaration
    ;; but not a statement. Makes code reuse easier and removes ambiguity.
    :c11.variable/description
-   (cat (opt (string "extern"))
-        (opt (string "struct"))
-        (altnt :c11/data-type :c11/symbol)
-        (opt (string "*"))
+   (cat (nt :c11/data-type)
         (list-of 
          (cat 
+          (star (string "*"))
           (nt :c11/symbol)
           (opt (cat
                 (string "[")
