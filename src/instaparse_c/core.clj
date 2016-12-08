@@ -14,7 +14,7 @@
    [instaparse-c.function :refer [function]]
    [instaparse-c.goto :refer [goto]]
    [instaparse-c.if :refer [if]]
-   [instaparse-c.macro :refer [macro]]
+   [instaparse-c.preprocessor :refer [preprocessor]]
    [instaparse-c.return :refer [return]]
    [instaparse-c.struct :refer [struct]]
    [instaparse-c.switch :refer [switch]]
@@ -85,6 +85,7 @@
                 expression
                 comment
                 macro
+                preprocessor
                 ])
 
 (def statements '[
@@ -132,6 +133,14 @@
                 (insta/parser whitespace
                               :start :c11/whitespace)))
 
+(def preprocess
+  (insta/parser c11-grammar
+                :start :mcc/raw
+                :auto-whitespace
+                (insta/parser whitespace
+                              :start :c11/whitespace)
+                ))
+
 (defn clean-parse [& args]
   (let [parsed (apply parse args)]
     (if (insta/failure? parsed)
@@ -140,4 +149,15 @@
 
 (defn clean-parses [& args]
   (let [parsed (apply insta/parses (cons parse args))]
+    (map remove-cruft parsed)))
+
+(defn clean-preprocess [& args]
+  (let [parsed (apply preprocess args)]
+    (if (insta/failure? parsed)
+      parsed
+      (remove-cruft parsed))))
+
+;;TODO: weird function names
+(defn clean-preprocess* [& args]
+  (let [parsed (apply insta/parses (cons preprocess args))]
     (map remove-cruft parsed)))

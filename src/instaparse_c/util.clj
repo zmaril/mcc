@@ -14,6 +14,8 @@
 (defn hs [& ss]
   (hide (cat (apply cat (map string ss)))))
 
+(def hs? (comp opt hs))
+
 (def string? (comp opt string))
 (def nt? (comp opt nt))
 
