@@ -3,10 +3,10 @@
   (:require 
    [instaparse.combinators :refer :all]
    [instaparse.core :as insta]
-
    [instaparse-c.assignment :refer [assignment]]
    [instaparse-c.comment :refer [comment]]
    [instaparse-c.continue :refer [continue]]
+   [instaparse-c.data-type :refer [data-type]]
    [instaparse-c.do :refer [do]]
    [instaparse-c.enum :refer [enum]]
    [instaparse-c.expression :refer [expression remove-cruft]]
@@ -14,68 +14,16 @@
    [instaparse-c.function :refer [function]]
    [instaparse-c.goto :refer [goto]]
    [instaparse-c.if :refer [if]]
+   [instaparse-c.literal :refer [literal]]
    [instaparse-c.preprocessor :refer [preprocessor]]
    [instaparse-c.return :refer [return]]
    [instaparse-c.struct :refer [struct]]
    [instaparse-c.switch :refer [switch]]
+   [instaparse-c.symbol :refer [symbol]]
    [instaparse-c.typedef :refer [typedef]]
    [instaparse-c.util :refer :all]
    [instaparse-c.variable :refer [variable]]
-   [instaparse-c.while :refer [while]]
-   ))
-
-;;Symbols serve both macros and the c language proper
-(def symbol
-  {:c11/symbol (cat (neg (nt :c11/reserved))
-                    (regexp "[a-zA-Z_][a-zA-Z_0-9]*"))
-   :c11/reserved
-   (alt (alts "extern" "void" "if" "NULL" "return")
-        (nt :c11.data-type/storage)
-        (nt :c11.data-type/qualifier)
-        (nt :c11.data-type/specifier-keywords)
-        )})
-
-(def data-type
-  {:c11/data-type
-   (cat 
-    (star (nt :c11.data-type/storage))
-    (star (nt :c11.data-type/qualifier))
-    (nt :c11.data-type/specifier))
-
-   :c11.data-type/storage (alts "typedef"
-                                "extern"
-                                "static"
-                                "auto"
-                                "register")
-
-   :c11.data-type/qualifier
-   (alts "restrict" "volatile" "const")
-
-   ;;TODO: this breaks validation, it produces combinations of specifiers that
-   ;;aren't valid according to the c11 specification. 
-   :c11.data-type/specifier
-    (alt
-     (plus (nt :c11.data-type/specifier-keywords))
-     (altnt :c11/symbol :c11.data-type/struct :c11.data-type/enum))
-
-   :c11.data-type/specifier-keywords
-   (alts "void" "char" "short" "int" "long" "float" "double" "signed" "unsigned"
-         "_Bool" "_Complex")
-
-   :c11.data-type/struct (cat (string "struct") (nt :c11/symbol))
-   :c11.data-type/enum (cat (string "enum") (nt :c11/symbol))
-   })
-
-(def literal
-  {:c11/literal
-   (altnt :c11.literal/int :c11.literal/string
-          :c11.literal/null :c11.literal/char
-          :c11.literal/octal)
-   :c11.literal/char (regexp "'\\\\?.'")
-   :c11.literal/octal (regexp "'\\\\0[0-7]+'")
-   :c11.literal/string (regexp "\"[^\"]*\"")
-   :c11.literal/int (regexp "[0-9]+")
-   :c11.literal/null (string "NULL")})
+   [instaparse-c.while :refer [while]]))
 
 
 (def language '[
