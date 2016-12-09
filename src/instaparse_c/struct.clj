@@ -5,21 +5,21 @@
    [instaparse-c.util :refer :all]))
 
 (def struct 
-  {:c11.statement/struct (altnt :c11.struct/declaration :c11.struct/definition)
+  {:mcc.statement/struct (altnt :mcc.struct/declaration :mcc.struct/definition)
 
-   :c11.struct/member 
-   (cat (altnt :c11/data-type :c11/symbol)
+   :mcc.struct/member 
+   (cat (altnt :mcc/data-type :mcc/symbol)
         (string? "*")
-        (nt :c11/symbol)
+        (nt :mcc/symbol)
         (hs ";"))
 
-   :c11.struct/declaration
+   :mcc.struct/declaration
    (cat (string "struct")
-        (nt? :c11/symbol)
-        (brackets (star (nt :c11.struct/member))))
+        (nt? :mcc/symbol)
+        (brackets (star (nt :mcc.struct/member))))
 
-   :c11.struct/definition
-   (cat (nt :c11.struct/declaration)
-        (nt? :c11/symbol)
+   :mcc.struct/definition
+   (cat (nt :mcc.struct/declaration)
+        (nt? :mcc/symbol)
         (string ";")
         )})

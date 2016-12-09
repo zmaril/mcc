@@ -5,11 +5,11 @@
    [instaparse-c.util :refer :all]))
 
 (def comment
-  {:c11/comment (altnt :c11.comment/mutliple-lines
-                       :c11.comment/single-line)
-   :c11.comment/mutliple-lines
+  {:mcc/comment (altnt :mcc.comment/mutliple-lines
+                       :mcc.comment/single-line)
+   :mcc.comment/mutliple-lines
    (regexp "/\\*([\\s\\S])*?(?=\\*/)\\*/")
-   :c11.comment/single-line
+   :mcc.comment/single-line
    (cat (hs "//")
         (regexp ".*")
         (hs "\n"))})

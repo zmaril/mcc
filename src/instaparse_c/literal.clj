@@ -5,12 +5,12 @@
    [instaparse-c.util :refer :all]))
 
 (def literal
-  {:c11/literal
-   (altnt :c11.literal/int :c11.literal/string
-          :c11.literal/null :c11.literal/char
-          :c11.literal/octal)
-   :c11.literal/char (regexp "'\\\\?.'")
-   :c11.literal/octal (regexp "'\\\\0[0-7]+'")
-   :c11.literal/string (regexp "\"[^\"]*\"")
-   :c11.literal/int (regexp "[0-9]+")
-   :c11.literal/null (string "NULL")})
+  {:mcc/literal
+   (altnt :mcc.literal/int :mcc.literal/string
+          :mcc.literal/null :mcc.literal/char
+          :mcc.literal/octal)
+   :mcc.literal/char (regexp "'\\\\?.'")
+   :mcc.literal/octal (regexp "'\\\\0[0-7]+'")
+   :mcc.literal/string (regexp "\"[^\"]*\"")
+   :mcc.literal/int (regexp "[0-9]+")
+   :mcc.literal/null (string "NULL")})

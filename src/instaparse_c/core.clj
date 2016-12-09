@@ -53,14 +53,14 @@
                   do
                   ])
 
-(def c11-grammar
+(def mcc-grammar
   (let [statement-keywords
-        (map #(keyword (str "c11.statement/" (name %))) statements)
+        (map #(keyword (str "mcc.statement/" (name %))) statements)
         alts (apply altnt statement-keywords)
-        starter {:c11/start (nt :c11/statements)
-                 :c11/statements
-                 (star (altnt :c11/statement :c11/macro))
-                 :c11/statement alts}]
+        starter {:mcc/start (nt :mcc/statements)
+                 :mcc/statements
+                 (star (altnt :mcc/statement :mcc/macro))
+                 :mcc/statement alts}]
     (apply merge
            (concat [starter]
                    (eval statements)
@@ -68,25 +68,25 @@
 
 (def whitespace
   (merge comment
-         {:c11/whitespace
-          (plus (altnt :c11.whitespace/characters :c11/comment))
-          :c11.whitespace/characters
+         {:mcc/whitespace
+          (plus (altnt :mcc.whitespace/characters :mcc/comment))
+          :mcc.whitespace/characters
           (regexp "[\\s]+") })
   )
 
 (def parse
-  (insta/parser c11-grammar
-                :start :c11/start
+  (insta/parser mcc-grammar
+                :start :mcc/start
                 :auto-whitespace
                 (insta/parser whitespace
-                              :start :c11/whitespace)))
+                              :start :mcc/whitespace)))
 
 (def preprocess
-  (insta/parser c11-grammar
+  (insta/parser mcc-grammar
                 :start :mcc/raw
                 :auto-whitespace
                 (insta/parser whitespace
-                              :start :c11/whitespace)
+                              :start :mcc/whitespace)
                 ))
 
 (defn clean-parse [& args]

@@ -6,10 +6,10 @@
 
 ;;This is both here and in expressions. strange
 (def assignment 
-  {:c11/assignment
+  {:mcc/assignment
    (cat
-    (nt :c11/expression)
+    (nt :mcc/expression)
     (hs "=")
-    (nt :c11/expression)
+    (nt :mcc/expression)
     (hs ";"))
    })

@@ -5,8 +5,8 @@
    [instaparse-c.util :refer :all]))
 
 (def return
-  {:c11.statement/return
+  {:mcc.statement/return
    (cat (string "return")
-        (nt? :c11/expression)
+        (nt? :mcc/expression)
         (hs ";"))})
 

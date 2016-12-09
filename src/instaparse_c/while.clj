@@ -5,13 +5,13 @@
    [instaparse-c.util :refer :all]))
 
 (def while 
-  {:c11.statement/while
+  {:mcc.statement/while
    (cat
     (hs "while")
-    (parens (nt :c11/expression))
-    (alt (nt :c11/statement)
+    (parens (nt :mcc/expression))
+    (alt (nt :mcc/statement)
           (cat (hs "{")
-               (star (nt :c11/statement))
+               (star (nt :mcc/statement))
                (hs "}"))))
 
    })

@@ -25,18 +25,18 @@
    
    :mcc.raw/define 
    (cat (hs "#" "define")
-        (altnt :c11.macro.define/value :c11.macro.define/function) )
+        (altnt :mcc.macro.define/value :mcc.macro.define/function) )
 
    :mcc.raw.define/value
-   (cat (nt :c11/symbol) (nt :c11/expression))
+   (cat (nt :mcc/symbol) (nt :mcc/expression))
 
    :mcc.raw.define/function 
-   (cat (nt :c11/symbol) (parens (list-of (nt :c11/symbol)))
-        (brackets? (star (nt :c11/statement))))
+   (cat (nt :mcc/symbol) (parens (list-of (nt :mcc/symbol)))
+        (brackets? (star (nt :mcc/statement))))
 
    :mcc.raw/if (cat
                   (hs "#" "if")
-                  (nt :c11/expression)
+                  (nt :mcc/expression)
                   (nt :mcc/raw)
                   (cat? (hs "#" "else")
                         (nt :mcc/raw))
@@ -45,7 +45,7 @@
    ;;TODO: ifndef
    :mcc.raw/ifdef (cat
                      (hs "#" "ifdef")
-                     (nt :c11/expression)
+                     (nt :mcc/expression)
                      (nt :mcc/raw)
                      (cat? (hs "#" "else")
                            (nt :mcc/raw))

@@ -5,9 +5,9 @@
    [instaparse-c.util :refer :all]))
 
 (def goto
-  {:c11.statement/goto (altnt :c11.goto/goto :c11.goto/label)
-   :c11.goto/goto
-   (cat (nt :c11/symbol) (string ":") (nt :c11/statement))
-   :c11.goto/label
-   (cat (string "goto") (nt :c11/symbol) (string ";"))})
+  {:mcc.statement/goto (altnt :mcc.goto/goto :mcc.goto/label)
+   :mcc.goto/goto
+   (cat (nt :mcc/symbol) (string ":") (nt :mcc/statement))
+   :mcc.goto/label
+   (cat (string "goto") (nt :mcc/symbol) (string ";"))})
 

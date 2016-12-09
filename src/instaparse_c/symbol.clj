@@ -6,11 +6,11 @@
 
 ;;Symbols serve both macros and the c language proper
 (def symbol
-  {:c11/symbol (cat (neg (nt :c11/reserved))
+  {:mcc/symbol (cat (neg (nt :mcc/reserved))
                     (regexp "[a-zA-Z_][a-zA-Z_0-9]*"))
-   :c11/reserved
+   :mcc/reserved
    (alt (alts "extern" "void" "if" "NULL" "return")
-        (nt :c11.data-type/storage)
-        (nt :c11.data-type/qualifier)
-        (nt :c11.data-type/specifier-keywords)
+        (nt :mcc.data-type/storage)
+        (nt :mcc.data-type/qualifier)
+        (nt :mcc.data-type/specifier-keywords)
         )})

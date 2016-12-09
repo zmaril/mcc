@@ -5,28 +5,28 @@
    [instaparse-c.util :refer :all]))
 
 (def variable 
-  {:c11.statement/variable
-   (altnt :c11.variable/declaration :c11.variable/definition)
+  {:mcc.statement/variable
+   (altnt :mcc.variable/declaration :mcc.variable/definition)
    ;;For lack of a better term, using `description` here to mean a declaration
    ;; but not a statement. Makes code reuse easier and removes ambiguity.
-   :c11.variable/description
-   (cat (nt :c11/data-type)
+   :mcc.variable/description
+   (cat (nt :mcc/data-type)
         (list-of 
          (cat 
           (star (string "*"))
-          (nt :c11/symbol)
+          (nt :mcc/symbol)
           (opt (cat
                 (string "[")
-                (opt (nt :c11/expression))
+                (opt (nt :mcc/expression))
                 (string "]"))))))
 
-   :c11.variable/declaration
+   :mcc.variable/declaration
    (cat
-    (nt :c11.variable/description)
+    (nt :mcc.variable/description)
     (hs ";"))
-   :c11.variable/definition
-   (cat (nt :c11.variable/description)
+   :mcc.variable/definition
+   (cat (nt :mcc.variable/description)
         (hs "=")
-        (altnt :c11/expression)
+        (altnt :mcc/expression)
         (hs ";"))
    })

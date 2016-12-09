@@ -5,4 +5,4 @@
    [instaparse-c.util :refer :all]))
 
 (def continue
-  {:c11.statement/continue (cat (string "continue") (string ";"))})
+  {:mcc.statement/continue (cat (string "continue") (string ";"))})

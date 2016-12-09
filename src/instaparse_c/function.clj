@@ -5,29 +5,29 @@
    [instaparse-c.util :refer :all]))
 
 (def function 
-  {:c11.statement/function
-   (altnt :c11.function/declaration
-          :c11.function/definition)
-   :c11.function/argument
-   (cat (nt :c11/data-type)
+  {:mcc.statement/function
+   (altnt :mcc.function/declaration
+          :mcc.function/definition)
+   :mcc.function/argument
+   (cat (nt :mcc/data-type)
         ;;What a mess ick
         (star (string "*"))
         (string? "[]")
         ;;Declarations don't need names for arguments apparently!
         ;;BUF *allocbuf(BUF *, int, int);
-        (nt? :c11/symbol))
-   :c11.function/declaration-header
+        (nt? :mcc/symbol))
+   :mcc.function/declaration-header
    (cat
-    (nt :c11/data-type)
+    (nt :mcc/data-type)
     (string? "*")
-    (nt :c11/symbol)
-    (parens (list-of? (nt :c11.function/argument))
+    (nt :mcc/symbol)
+    (parens (list-of? (nt :mcc.function/argument))
             (cat? (hs ",") (string "...") )))
-   :c11.function/declaration
-   (cat (nt :c11.function/declaration-header) (hs ";"))
+   :mcc.function/declaration
+   (cat (nt :mcc.function/declaration-header) (hs ";"))
 
-   :c11.function/definition
-   (cat (nt :c11.function/declaration-header)
+   :mcc.function/definition
+   (cat (nt :mcc.function/declaration-header)
         (hs "{")
-        (star (altnt :c11/statement :c11/macro))
+        (star (altnt :mcc/statement :mcc/macro))
         (hs "}"))})

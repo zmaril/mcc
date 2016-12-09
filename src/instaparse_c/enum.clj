@@ -7,11 +7,11 @@
 (def enum 
   ;;TODO: differentiate between typeless single use enum and an enum declaration
   ;;that creates a type
-  {:c11.statement/enum
+  {:mcc.statement/enum
    (cat (string "enum")
-        (nt? :c11/symbol)
-        (brackets (list-of (nt :c11/symbol)))
-        (nt? :c11/symbol)
+        (nt? :mcc/symbol)
+        (brackets (list-of (nt :mcc/symbol)))
+        (nt? :mcc/symbol)
         (hs ";")
         )
 

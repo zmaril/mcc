@@ -5,21 +5,21 @@
    [instaparse-c.util :refer :all]))
 
 (def if 
-  {:c11.statement/if
+  {:mcc.statement/if
    (cat
     (hs "if")
-    (parens (nt :c11/expression))
-    (nt :c11.if/body)
+    (parens (nt :mcc/expression))
+    (nt :mcc.if/body)
     (star (cat
            (string "else if")
-           (parens (nt :c11/expression))
-           (nt :c11.if/body)))
+           (parens (nt :mcc/expression))
+           (nt :mcc.if/body)))
     (cat? (string "else")
-          (nt :c11.if/body)))
-   :c11.if/body
+          (nt :mcc.if/body)))
+   :mcc.if/body
    (alt
-    (nt :c11/macro)
-    (nt :c11/statement)
+    (nt :mcc/macro)
+    (nt :mcc/statement)
     (cat (hs "{")
-         (star (nt :c11/statement))
+         (star (nt :mcc/statement))
          (hs "}")))})

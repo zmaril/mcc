@@ -5,20 +5,20 @@
    [instaparse-c.util :refer :all]))
 
 (def switch 
-  {:c11.statement/switch
+  {:mcc.statement/switch
    (cat
     (hs "switch")
-    (parens (nt :c11/expression))
+    (parens (nt :mcc/expression))
     (brackets  
      (cat 
       ;;TODO: should comments be considered whitespace?
-      (nt? :c11/comment)
-      (star (nt :c11.switch/case))
-      (nt? :c11.switch/default))))
-   :c11.switch/case
-   (cat (string "case") (nt :c11/expression) (string ":")
-        (star (altnt :c11/statement :c11/macro :c11/comment)))
-   :c11.switch/default
+      (nt? :mcc/comment)
+      (star (nt :mcc.switch/case))
+      (nt? :mcc.switch/default))))
+   :mcc.switch/case
+   (cat (string "case") (nt :mcc/expression) (string ":")
+        (star (altnt :mcc/statement :mcc/macro :mcc/comment)))
+   :mcc.switch/default
    (cat (string "default") (string ":")
-        (star (altnt :c11/statement :c11/macro :c11/comment)))
+        (star (altnt :mcc/statement :mcc/macro :mcc/comment)))
    })

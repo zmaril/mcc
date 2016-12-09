@@ -5,18 +5,18 @@
    [instaparse-c.util :refer :all]))
 
 (def for 
-  {:c11.statement/for
+  {:mcc.statement/for
    (cat
     (hs "for")
     (parens
-     (cat (nt? :c11/expression)
+     (cat (nt? :mcc/expression)
           (string ";")
-          (nt? :c11/expression)
+          (nt? :mcc/expression)
           (string ";")
-          (nt? :c11/expression)))
-    (alt (nt :c11/statement)
+          (nt? :mcc/expression)))
+    (alt (nt :mcc/statement)
          (cat (hs "{")
-              (nt :c11/statements)
+              (nt :mcc/statements)
               (hs "}")))
     )
    })
