@@ -17,8 +17,8 @@
       (nt? :mcc.switch/default))))
    :mcc.switch/case
    (cat (string "case") (nt :mcc/expression) (string ":")
-        (star (altnt :mcc/statement :mcc/macro :mcc/comment)))
+        (star (altnt :mcc/statement :mcc/comment)))
    :mcc.switch/default
    (cat (string "default") (string ":")
-        (star (altnt :mcc/statement :mcc/macro :mcc/comment)))
+        (star (altnt :mcc/statement :mcc/comment)))
    })

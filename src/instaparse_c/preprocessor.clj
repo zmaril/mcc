@@ -2,30 +2,25 @@
   (:refer-clojure :exclude [cat comment string?])
   (:require 
    [instaparse.combinators :refer :all]
-   [instaparse-c.util :refer :all]))
+   [instaparse-c.util :refer :all]
+   [instaparse-c.expression :refer [remove-cruft]]))
 
 ;;;TODO \n is significant in preprocessor
+
+;;TODO: split lines, capture macros by hand, only process lines that start with # or are preceded by \\
 (def preprocessor
   {
    :mcc/raw
    (cat 
-    (star (altnt :mcc.raw/macro :mcc.raw/not-macro))
-    (hs? "\n")) ;;no idea why this needs to be here sometimes
-
-   :mcc.raw/not-macro
-   (alt
-    (cat 
-     (neg (alts "/*" "*/"))
-     (regexp #"[^# \t\n\r]+")
-     )
-    )
+    (star (alt (hide (regexp "\n+"))
+               (nt :mcc.raw/macro))))
 
    :mcc.raw/macro
    (altnt :mcc.raw/define :mcc.raw/if :mcc.raw/ifdef :mcc.raw/include)
    
    :mcc.raw/define 
    (cat (hs "#" "define")
-        (altnt :mcc.macro.define/value :mcc.macro.define/function) )
+        (altnt :mcc.raw.define/value :mcc.raw.define/function) )
 
    :mcc.raw.define/value
    (cat (nt :mcc/symbol) (nt :mcc/expression))
@@ -56,8 +51,5 @@
    :mcc.raw.include/header
    (cat (hs "#" "include" "<") (regexp "[a-z0-9/]+\\.h") (hs ">"))
    :mcc.raw.include/source
-   (cat (hs "#" "include" "\"") (regexp "[a-z0-9/]+\\.h") (hs "\""))
-
-   :mcc.raw/value
-   (regexp "[0-9]+")})
+   (cat (hs "#" "include" "\"") (regexp "[a-z0-9/]+\\.h") (hs "\""))})
 

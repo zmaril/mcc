@@ -18,7 +18,6 @@
           (nt :mcc.if/body)))
    :mcc.if/body
    (alt
-    (nt :mcc/macro)
     (nt :mcc/statement)
     (cat (hs "{")
          (star (nt :mcc/statement))

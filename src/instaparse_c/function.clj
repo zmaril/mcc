@@ -29,5 +29,5 @@
    :mcc.function/definition
    (cat (nt :mcc.function/declaration-header)
         (hs "{")
-        (star (altnt :mcc/statement :mcc/macro))
+        (star (nt :mcc/statement))
         (hs "}"))})

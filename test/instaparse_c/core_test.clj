@@ -94,6 +94,7 @@
 #_(parse-file "dev-resources/corpus/openssh-portable/scp.c" )
 
 (def scp (slurp  "dev-resources/corpus/openssh-portable/scp.c"))
+(def testtest (slurp  "dev-resources/corpus/openssh-portable/testtest.c"))
 
 ;(line-by-line 0 200)
 
