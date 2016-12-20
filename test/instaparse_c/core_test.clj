@@ -20,7 +20,7 @@
   (c/clean-preprocess* (slurp file-name)))
 
 (deftest can-we-parse-everything
-  (doseq [f corpus] 
+  (doseq [f corpus]
          (testing (str "Testing: " (.getPath f))
            (is (not (insta/failure? (parse-file f)))))))
 
@@ -31,8 +31,8 @@
        clojure.string/split-lines))
 
 (defn up-to [n]
-  (->> lines 
-       (take n) 
+  (->> lines
+       (take n)
        (clojure.string/join "\n")))
 
 
@@ -48,7 +48,7 @@
         (println i (count parses) timed)))))
 
 (defn show
-  ([n] (show n (inc n)) )
+  ([n] (show n (inc n)))
   ([i j]
    (->> lines
         (take j)
@@ -63,8 +63,8 @@
 				if (a) {
 #else
 				if (a) {
-#endif 
-				  a = a;	
+#endif
+				  a = a;
 				}
   ")
 
@@ -76,8 +76,8 @@
 				if (a) {
   #else
 				if (a) {
-  #endif 
-				  a = a;	
+  #endif
+				  a = a;
 				}
 		}
   ")
@@ -91,11 +91,9 @@
 #_(count  (c/clean-parses t :unhide :all))
 #_(line-by-line 150 170)
 
-#_(parse-file "dev-resources/corpus/openssh-portable/scp.c" )
+#_(parse-file "dev-resources/corpus/openssh-portable/scp.c")
 
 (def scp (slurp  "dev-resources/corpus/openssh-portable/scp.c"))
 (def testtest (slurp  "dev-resources/corpus/openssh-portable/testtest.c"))
 
 ;(line-by-line 0 200)
-
-

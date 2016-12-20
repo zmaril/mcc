@@ -7,4 +7,5 @@
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [instaparse "1.4.3"]]
   :profiles {:dev {:resource-paths ["dev-resources/corpus"]
-                   :dependencies [[me.raynes/fs "1.4.6"]]}})
+                   :dependencies [[me.raynes/fs "1.4.6"]
+                                  [proto-repl "0.3.1"]]}})
