@@ -1,8 +1,10 @@
 (ns instaparse-c.core
   (:refer-clojure :exclude [cat comment symbol if while for string? struct do])
   (:require
-   [clojure.string :refer [split-lines trim]]
+   [clojure.string :refer [split-lines trim join]]
    [clojure.core.match :refer [match]]
+   [clojure.pprint :refer [pprint]]
+   [clojure.spec :as s]
    [instaparse.combinators :refer :all]
    [instaparse.core :as insta]
    [instaparse-c.grammar :refer [grammar]]
@@ -24,6 +26,7 @@
                 :auto-whitespace
                 (insta/parser whitespace
                               :start :mcc/whitespace)))
+
 (defn clean-parse [& args]
   (let [parsed (apply parse args)]
     (if (insta/failure? parsed)
@@ -34,123 +37,110 @@
   (let [parsed (apply insta/parses (cons parse args))]
     (map remove-cruft parsed)))
 
-
-
-(def testtest (slurp  "dev-resources/corpus/openssh-portable/scp.c"))
-
 (def preprocessor-whitespace
-  {:mcc.raw/whitespace (plus (regexp "[ \t]+"))})
+  {:mcc.macro/whitespace (plus (regexp "([ \t]|(\\\\\n))+"))})
 
 (def preprocess
   (insta/parser grammar
-                :start :mcc/raw
+                :start :mcc/macro
                 :auto-whitespace
                 (insta/parser preprocessor-whitespace
-                              :start :mcc.raw/whitespace)))
+                              :start :mcc.macro/whitespace)))
 
-(defn clean-preprocess [& args]
-  (let [parsed (apply preprocess args)]
-    (if (insta/failure? parsed)
-      parsed
-      (remove-cruft parsed))))
+(def clean-preprocess
+   (comp remove-cruft preprocess))
 
-;;TODO: weird function names
-(defn clean-preprocess* [& args]
-  (let [parsed (apply insta/parses (cons preprocess args))]
-    (map remove-cruft parsed)))
+(def testtest (slurp  "dev-resources/corpus/openssh-portable/testtest.c"))
 
-(defn tag-lines-step [{:keys [bundles current-bundle] :as state} line]
+(defmulti convert-bundle :type)
+
+(defmethod convert-bundle :macro [{:keys [lines]}]
+  (let [text (join "\n" lines)
+        parsed (clean-preprocess text)]
+       {:type (first (second parsed))
+        :text text
+        :parsed parsed}))
+
+(defmethod convert-bundle :not-macro [{:keys [lines]}]
+ {:type :mcc/raw-text
+  :text (join "\n" lines)})
+
+(defmethod convert-bundle nil [_] nil)
+
+(defn into-bundles-step [{:keys [bundles current-bundle] :as state} line]
   (let [line (trim line)]
     (match [(first line) (last line) (:type current-bundle)]
-
+           ;;Start of multiline macro
            [\# \\ _]
-           {:bundles (conj bundles current-bundle)
+           {:bundles (conj bundles (convert-bundle current-bundle))
             :current-bundle {:type :macro
                              :lines [line]}
             :in-macro true}
 
+           ;;Continue multiline macro
            [_  \\ :macro]
            (update-in state [:current-bundle :lines] conj line)
 
+           ;;End of multiline macro
            [_  _ :macro]
-           {:bundles
-            (conj bundles
-                  (update current-bundle :lines conj line))
-            :current-bundle nil
-            :in-macro false}
+           (let [new-bundle
+                 (convert-bundle
+                  (update current-bundle :lines conj line))]
+                {:bundles (conj bundles new-bundle)
+                 :current-bundle nil
+                 :in-macro false})
 
+           ;;Single line macro
            [\# _  _]
            {:bundles
             (conj bundles
-                  current-bundle
-                  {:type :macro :lines [line]})
+                  (convert-bundle current-bundle)
+                  (convert-bundle {:type :macro :lines [line]}))
             :current-bundle nil
             :in-macro false}
 
-
+           ;;Add non macro lines to bundle
            [_ _ :not-macro]
            (update-in state [:current-bundle :lines] conj line)
 
+           ;;Begin collecting non macro lines
            [_  _  _]
-           {:bundles (conj bundles current-bundle)
-            :current-bundle {:type :not-macro
-                             :lines [line]}
+           {:bundles (conj bundles (convert-bundle current-bundle))
+            :current-bundle {:type :not-macro :lines [line]}
             :in-macro false})))
 
-(defn tag-lines [s]
+(defn into-bundles [s]
   (let [tagged
-        (reduce tag-lines-step
+        (reduce into-bundles-step
                 {:bundles [] :current-bundle nil :in-macro false}
                 (vec (take 1000 (split-lines s))))
         tagged
         (update tagged :bundles (partial filter identity))]
-    (conj (vec (:bundles tagged)) (:current-bundle tagged))))
+    (conj (vec (:bundles tagged)) (convert-bundle (:current-bundle tagged)))))
 
-(filter #(= :macro (:type %)) (tag-lines testtest))
+#_(map
+   (comp clean-preprocess-line #(apply str %) :lines)
+   (filter #(= :macro (:type %)) (tag-lines testtest)))
 
-(defn collect-bundles-step [{:keys [bundles current-bundle] :as state} line]
-  (let [line (trim line)]
-    (match [(first line) (last line) (:type current-bundle)]
+(def tags (map :type (into-bundles testtest)))
 
-           [\# \\ _]
-           {:bundles (conj bundles current-bundle)
-            :current-bundle {:type :macro
-                             :lines [line]}
-            :in-macro true}
+(s/def ::static-conditional
+   (s/cat ::conditional #{:mcc.macro/if :mcc.macro/ifdef}
+          ::bundles (s/* ::bundle)
+          ::else
+          (s/* (s/cat :else #{:mcc.macro/else} ::bundles ::bundle))
+          ::end #{:mcc.macro/endif}))
 
-           [_  \\ :macro]
-           (update-in state [:current-bundle :lines] conj line)
+(s/def ::not-static-conditional
+       (s/+ #{:mcc/raw-text :mcc.macro/include :mcc.macro/define}))
 
-           [_  _ :macro]
-           {:bundles
-            (conj bundles
-                  (update current-bundle :lines conj line))
-            :current-bundle nil
-            :in-macro false}
+;;TOOD: this seems verbose, not sure how else to do it
+(s/def ::bundle
+       (s/alt :mcc.bundle/basic
+              ::not-static-conditional
+              :mcc.bundle/static-conditional
+              ::static-conditional))
 
-           [\# _  _]
-           {:bundles
-            (conj bundles
-                  current-bundle
-                  {:type :macro :lines [line]})
-            :current-bundle nil
-            :in-macro false}
-
-
-           [_ _ :not-macro]
-           (update-in state [:current-bundle :lines] conj line)
-
-           [_  _  _]
-           {:bundles (conj bundles current-bundle)
-            :current-bundle {:type :not-macro
-                             :lines [line]}
-            :in-macro false})))
-
-(defn collect-bundles [tagged]
-  (let [bundled
-        (reduce collect-bundles-step
-                {:bundles [] :current-bundle nil :in-macro false} tagged)
-
-        bundled
-        (update bundled :bundles (partial filter identity))]
-    (conj (vec (:bundles bundled)) (:current-bundle bundled))))
+(def bundles (s/* ::bundle))
+(s/explain bundles tags)
+(s/conform bundles tags)

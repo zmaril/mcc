@@ -15,10 +15,6 @@
 (defn parse-file [file-name]
   (c/clean-parse (slurp file-name)))
 
-
-(defn preprocess-file [file-name]
-  (c/clean-preprocess* (slurp file-name)))
-
 (deftest can-we-parse-everything
   (doseq [f corpus]
          (testing (str "Testing: " (.getPath f))

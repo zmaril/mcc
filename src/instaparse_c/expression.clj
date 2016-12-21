@@ -1,6 +1,6 @@
 (ns instaparse-c.expression
   (:refer-clojure :exclude [cat comment function string?])
-  (:require 
+  (:require
    [instaparse.combinators :refer :all]
    [instaparse-c.util :refer :all]
    [instaparse.core :as insta]))
@@ -34,21 +34,21 @@
 
 ;; The following uses https://en.wikipedia.org/wiki/Operator-precedence_parser
 ;; Removes ambiguity from the parses
-(def expression 
-  {:mcc/expression (nt :mcc/comma) 
-   :mcc.statement/expression (cat (nt :mcc/expression) (string ";") )
+(def expression
+  {:mcc/expression (nt :mcc/comma)
+   :mcc.statement/expression (cat (nt :mcc/expression) (hs ";"))
    :mcc/comma
    (left-to-right* :mcc.expression/assignment (hs ","))
 
-   :mcc.expression/assignment 
+   :mcc.expression/assignment
    (left-to-right*
     :mcc.expression/ternary
     (alts "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" "&=" "^=" "|="))
-   
-   :mcc.expression/ternary 
+
+   :mcc.expression/ternary
    (cat
     (nt :mcc.expression.logical/or)
-    (cat? 
+    (cat?
      (hs "?")
      (nt :mcc.expression.logical/or)
      (hs ":")
@@ -57,18 +57,18 @@
    :mcc.expression.logical/or
    (left-to-right* :mcc.expression.logical/and (alts "or" "||"))
 
-   :mcc.expression.logical/and 
+   :mcc.expression.logical/and
    (left-to-right* :mcc.expression.bitwise/or (alts "and" "&&"))
 
-   :mcc.expression.bitwise/or 
-   (left-to-right* :mcc.expression.bitwise/xor (string "|"))
+   :mcc.expression.bitwise/or
+   (left-to-right* :mcc.expression.bitwise/xor (hs "|"))
 
-   :mcc.expression.bitwise/xor 
-   (left-to-right* :mcc.expression.bitwise/and (string "^"))
+   :mcc.expression.bitwise/xor
+   (left-to-right* :mcc.expression.bitwise/and (hs "^"))
 
-   :mcc.expression.bitwise/and 
+   :mcc.expression.bitwise/and
    (cat
-    (cat? (nt :mcc.expression/equality) (string "&") (neg (string "&")))
+    (cat? (nt :mcc.expression/equality) (hs "&") (neg (string "&")))
     (nt :mcc.expression/equality))
 
    :mcc.expression/equality
@@ -77,10 +77,10 @@
    :mcc.expression/comparsion
    (left-to-right* :mcc.expression.bitwise/shift (alts ">" ">=" "<="  "<"))
 
-   :mcc.expression.bitwise/shift 
+   :mcc.expression.bitwise/shift
    (left-to-right* :mcc.expression.arthimetic/addition (alts "<<" ">>"))
 
-   :mcc.expression.arthimetic/addition 
+   :mcc.expression.arthimetic/addition
    (left-to-right* :mcc.expression.arthimetic/subtraction (string "+"))
 
    :mcc.expression.arthimetic/subtraction
@@ -104,17 +104,17 @@
    :mcc.expression/prefix-operation
    (cat
     (star
-     (alt 
+     (alt
       (alts "++" "--" "!" "~" "*" "&")
       (cat (string "+") (neg (string "+")))
       (cat (string "-") (neg (string "-")))
 
-      ;;TODO: how does the * character interact with data-type declarations? 
+      ;;TODO: how does the * character interact with data-type declarations?
       ;;Cast
-      (parens (cat (nt :mcc/data-type) (string? "*")))
-      ))
+      (parens (cat (nt :mcc/data-type) (string? "*")))))
+
     (nt :mcc.expression/size-of))
-   
+
 
    :mcc.expression/size-of
    (cat (string? "sizeof") (nt :mcc.expression/array-subscript))
@@ -124,9 +124,9 @@
    :mcc.expression/array-subscript
    (cat (nt :mcc.expression.member/select-through-pointer)
         (cat?
-         (string "[")
+         (hs "[")
          (nt? :mcc/expression)
-         (string "]")))
+         (hs "]")))
 
    :mcc.expression.member/select-through-pointer
    (left-to-right :mcc.expression.member/select-by-reference (string "->"))
@@ -153,13 +153,13 @@
    ;;calls.
 
    :mcc.expression/function-call
-   (alt 
+   (alt
     (cat (nt :mcc/symbol)
          (parens (list-of? (nt :mcc.expression/assignment)))))
 
    :mcc.expression/parens
    (parens (nt :mcc/expression))
-   
+
    :mcc.expression/subscript
    (cat
     (nt :mcc/expression)

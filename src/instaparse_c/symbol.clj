@@ -1,6 +1,7 @@
-(ns instaparse-c.symbol 
-  (:refer-clojure :exclude [cat comment string?])
-  (:require 
+
+(ns instaparse-c.symbol
+  (:refer-clojure :exclude [cat comment string? symbol])
+  (:require
    [instaparse.combinators :refer :all]
    [instaparse-c.util :refer :all]))
 
@@ -12,5 +13,4 @@
    (alt (alts "extern" "void" "if" "NULL" "return")
         (nt :mcc.data-type/storage)
         (nt :mcc.data-type/qualifier)
-        (nt :mcc.data-type/specifier-keywords)
-        )})
+        (nt :mcc.data-type/specifier-keywords))})

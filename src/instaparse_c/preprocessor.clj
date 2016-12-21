@@ -4,49 +4,39 @@
    [instaparse.combinators :refer :all]
    [instaparse-c.util :refer :all]
    [instaparse-c.expression :refer [remove-cruft]]))
-;;TODO: get rid of old code and rework it to parse macros independently of each taq
 
 (def preprocessor
   {
-   :mcc/raw
-   (cat
-    (star (alt (hide (regexp "\n+"))
-               (nt :mcc.raw/macro))))
+   :mcc/macro
+   (altnt :mcc.macro/define :mcc.macro/if :mcc.macro/ifdef :mcc.macro/include
+          :mcc.macro/else :mcc.macro/endif)
 
-   :mcc.raw/macro
-   (altnt :mcc.raw/define :mcc.raw/if :mcc.raw/ifdef :mcc.raw/include)
-
-   :mcc.raw/define
+   :mcc.macro/define
    (cat (hs "#" "define")
-        (altnt :mcc.raw.define/value :mcc.raw.define/function))
+        (altnt :mcc.macro.define/value :mcc.macro.define/function))
 
-   :mcc.raw.define/value
+   :mcc.macro.define/value
    (cat (nt :mcc/symbol) (nt :mcc/expression))
 
-   :mcc.raw.define/function
+   :mcc.macro.define/function
    (cat (nt :mcc/symbol) (parens (list-of (nt :mcc/symbol)))
         (brackets? (star (nt :mcc/statement))))
 
-   :mcc.raw/if (cat
+   :mcc.macro/if (cat
                   (hs "#" "if")
-                  (nt :mcc/expression)
-                  (nt :mcc/raw)
-                  (cat? (hs "#" "else")
-                        (nt :mcc/raw))
-                  (hs "#" "endif"))
+                  (nt :mcc/expression))
+
+   :mcc.macro/else (hs "#" "else")
+   :mcc.macro/endif (hs "#" "endif")
 
    ;;TODO: ifndef
-   :mcc.raw/ifdef (cat
+   :mcc.macro/ifdef (cat
                      (hs "#" "ifdef")
-                     (nt :mcc/expression)
-                     (nt :mcc/raw)
-                     (cat? (hs "#" "else")
-                           (nt :mcc/raw))
-                     (hs "#" "endif"))
+                     (nt :mcc/expression))
 
-   :mcc.raw/include
-   (altnt :mcc.raw.include/header :mcc.raw.include/source)
-   :mcc.raw.include/header
+   :mcc.macro/include
+   (altnt :mcc.macro.include/header :mcc.macro.include/source)
+   :mcc.macro.include/header
    (cat (hs "#" "include" "<") (regexp "[a-z0-9/]+\\.h") (hs ">"))
-   :mcc.raw.include/source
+   :mcc.macro.include/source
    (cat (hs "#" "include" "\"") (regexp "[a-z0-9/]+\\.h") (hs "\""))})
