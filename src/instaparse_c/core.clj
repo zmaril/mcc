@@ -57,13 +57,14 @@
 (defmethod convert-bundle :macro [{:keys [lines]}]
   (let [text (join "\n" lines)
         parsed (clean-preprocess text)]
-       {:type (first (second parsed))
-        :text text
-        :parsed parsed}))
+       {:mcc.bundle/type (first (second parsed))
+        :mcc.bundle/text text
+        :mcc.bundle/parsed parsed}))
+
 
 (defmethod convert-bundle :not-macro [{:keys [lines]}]
- {:type :mcc/raw-text
-  :text (join "\n" lines)})
+ {:mcc.bundle/type :mcc.bundle/raw-text
+  :mcc.bundle/text (join "\n" lines)})
 
 (defmethod convert-bundle nil [_] nil)
 
@@ -122,7 +123,18 @@
    (comp clean-preprocess-line #(apply str %) :lines)
    (filter #(= :macro (:type %)) (tag-lines testtest)))
 
-(def tags (map :type (into-bundles testtest)))
+(def bundled (into-bundles testtest))
+(def tags (map :type bundled))
+
+
+
+(s/def :mcc.bundle/type keyword?) ;TOOD add all these in
+                                 ;#{:mcc.bundle/raw-text :mcc.macro/if})
+(s/def :mcc.bundle/text string?)
+(s/def :mcc.bundle/parsed (constantly true)) ;;TODO
+(s/def :mcc/bundle (s/keys :req [:mcc.bundle/type :mcc.bundle/text]
+                           :opt [:mcc.bundle/parsed]))
+
 
 (s/def ::static-conditional
    (s/cat ::conditional #{:mcc.macro/if :mcc.macro/ifdef}
@@ -134,13 +146,13 @@
 (s/def ::not-static-conditional
        (s/+ #{:mcc/raw-text :mcc.macro/include :mcc.macro/define}))
 
-;;TOOD: this seems verbose, not sure how else to do it
-(s/def ::bundle
-       (s/alt :mcc.bundle/basic
+
+(s/def :mcc/chunked
+       (s/alt :mcc.chunked/basic
               ::not-static-conditional
-              :mcc.bundle/static-conditional
+              :mcc.chunked/static-conditional
               ::static-conditional))
 
-(def bundles (s/* ::bundle))
-(s/explain bundles tags)
-(s/conform bundles tags)
+(s/def :mcc/bundles  (s/* :mcc/bundle))
+(s/explain :mcc/bundles bundled)
+(s/conform :mcc/bundles bundled)
