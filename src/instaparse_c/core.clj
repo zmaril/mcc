@@ -1,5 +1,5 @@
 (ns instaparse-c.core
-  (:refer-clojure :exclude [cat comment symbol if while for string? struct do])
+  (:refer-clojure :exclude [cat comment struct do])
   (:require
    [clojure.string :refer [split-lines trim join]]
    [clojure.core.match :refer [match]]
@@ -10,33 +10,12 @@
    [instaparse-c.grammar :refer [grammar]]
    [instaparse-c.comment :refer [comment]]
    [instaparse-c.expression :refer [remove-cruft]]
-   [instaparse-c.util :refer :all]))
+   [instaparse-c.util :refer [altnt]]
+   [clojure.data :refer [diff]]
+   [com.rpl.specter :refer :all]
+   [datascript.core :as d]))
 
-
-(def whitespace
-  (merge comment
-         {:mcc/whitespace
-          (plus (altnt :mcc.whitespace/characters :mcc/comment))
-          :mcc.whitespace/characters
-          (regexp "[\\s]+")}))
-
-(def parse
-  (insta/parser grammar
-                :start :mcc/start
-                :auto-whitespace
-                (insta/parser whitespace
-                              :start :mcc/whitespace)))
-
-(defn clean-parse [& args]
-  (let [parsed (apply parse args)]
-    (if (insta/failure? parsed)
-      parsed
-      (remove-cruft parsed))))
-
-(defn clean-parses [& args]
-  (let [parsed (apply insta/parses (cons parse args))]
-    (map remove-cruft parsed)))
-
+;;(insta/set-default-output-format! :enlive)
 (def preprocessor-whitespace
   {:mcc.macro/whitespace (plus (regexp "([ \t]|(\\\\\n))+"))})
 
@@ -128,31 +107,145 @@
 
 
 
-(s/def :mcc.bundle/type keyword?) ;TOOD add all these in
-                                 ;#{:mcc.bundle/raw-text :mcc.macro/if})
+(s/def :mcc.bundle/type
+       #{:mcc.macro/if
+         :mcc.macro/ifdef
+         :mcc.macro/else
+         :mcc.macro/endif
+         :mcc.bundle/raw-text
+         :mcc.macro/include
+         :mcc.macro/define})
+
 (s/def :mcc.bundle/text string?)
-(s/def :mcc.bundle/parsed (constantly true)) ;;TODO
+(s/def :mcc.bundle/parsed vector?) ;;TODO
 (s/def :mcc/bundle (s/keys :req [:mcc.bundle/type :mcc.bundle/text]
                            :opt [:mcc.bundle/parsed]))
 
+(defn bundle-of [tags]
+     (s/and :mcc/bundle
+            (fn [bundle] (-> bundle :mcc.bundle/type tags boolean))))
 
 (s/def ::static-conditional
-   (s/cat ::conditional #{:mcc.macro/if :mcc.macro/ifdef}
-          ::bundles (s/* ::bundle)
+   (s/cat ::conditional (bundle-of #{:mcc.macro/if :mcc.macro/ifdef})
+          ::bundles (s/* :mcc/bundle)
           ::else
-          (s/* (s/cat :else #{:mcc.macro/else} ::bundles ::bundle))
-          ::end #{:mcc.macro/endif}))
+          (s/*
+             (s/cat :else (bundle-of #{:mcc.macro/else})
+                    ::bundles :mcc/bundle))
+          ::end (bundle-of #{:mcc.macro/endif})))
+
 
 (s/def ::not-static-conditional
-       (s/+ #{:mcc/raw-text :mcc.macro/include :mcc.macro/define}))
-
+       (bundle-of
+             #{:mcc.bundle/raw-text
+               :mcc.macro/include
+               :mcc.macro/define}))
 
 (s/def :mcc/chunked
-       (s/alt :mcc.chunked/basic
-              ::not-static-conditional
-              :mcc.chunked/static-conditional
-              ::static-conditional))
+       (s/alt :mcc.bundle/not-static-conditional ::not-static-conditional
+             :mcc.bundle/static-conditional     ::static-conditional))
 
 (s/def :mcc/bundles  (s/* :mcc/bundle))
 (s/explain :mcc/bundles bundled)
 (s/conform :mcc/bundles bundled)
+
+(s/explain (s/* :mcc/chunked) bundled)
+(s/conform (s/* :mcc/chunked) bundled)
+
+(defn into-chunks [bundles]
+      (let [chunks (s/conform (s/* :mcc/chunked) bundles)]
+          (map (fn [[k m]] (assoc m :mcc.chunk/type k)) chunks)))
+
+(def test-chunks (into-chunks bundled))
+
+(defmulti produce-text :mcc.chunk/type)
+
+(defmethod produce-text :mcc.bundle/not-static-conditional [chunk]
+      (list (:mcc.bundle/text chunk)))
+
+(defmethod produce-text :mcc.bundle/static-conditional [chunk]
+      (list "" (join (map :mcc.bundle/text  (::bundles chunk))))) ;;uhhh
+
+(defn cart [colls]
+  (if (empty? colls)
+    '(())
+    (for [x (first colls)
+          more (cart (rest colls))]
+      (cons x more))))
+
+(defn produce-strings [chunks]
+    (map join (cart (map produce-text chunks))))
+
+(map join (cart (map produce-text test-chunks)))
+
+(insta/set-default-output-format! :enlive)
+
+(def whitespace
+  (merge comment
+         {:mcc/whitespace
+          (plus (altnt :mcc.whitespace/characters :mcc/comment))
+          :mcc.whitespace/characters
+          (regexp "[\\s]+")}))
+
+(def parse
+  (insta/parser grammar
+                :start :mcc/start
+                :auto-whitespace
+                (insta/parser whitespace
+                              :start :mcc/whitespace)))
+
+(defn clean-parse [& args]
+  (let [parsed (apply parse args)
+        parsed (insta/add-line-and-column-info-to-metadata (first args) parsed)]
+    (if (insta/failure? parsed)
+      parsed
+      (remove-cruft parsed))))
+
+(defn clean-parses [& args]
+  (let [parsed (apply insta/parses (cons parse args))]
+    (map remove-cruft parsed)))
+
+(apply diff (map clean-parse (produce-strings test-chunks)))
+
+(def testparse
+ (clean-parse (first (produce-strings test-chunks))))
+
+
+(defn enlive-output->datascript-datums [m]
+ (cond
+    (map? m)
+    (as-> m $
+        #_(assoc $ :meta (meta m))
+        (assoc $ :db/id (d/tempid :mcc))
+        (transform [:content ALL] enlive-output->datascript-datums $))
+
+    (vector? m)
+    {:tag (first m)
+     :content
+     (map-indexed
+      (fn [i v] (-> v enlive-output->datascript-datums (assoc :order i)))
+      (rest m))}
+
+    :default {:db/id (d/tempid :mcc) :type :value :value m}))
+(def metad (enlive-output->datascript-datums testparse))
+
+(def schema
+ {:content {:db/cardinality :db.cardinality/many
+            :db/valueType   :db.type/ref
+            :db/isComponent true}})
+
+
+(def conn (d/create-conn schema))
+(d/transact! conn [metad])
+
+(def printf
+ (d/q '[:find  ?prize
+        :where [?value :value "printf"]
+               [?symbol :content ?value]
+               [?fun-call :content ?symbol]
+               [?fun-call :content ?args]
+               [?args :order 1]
+               [?args :content ?temp1]
+               [?temp1 :content ?temp2]
+               [?temp2 :value ?prize]]
+      @conn))
