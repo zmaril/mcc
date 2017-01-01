@@ -1,4 +1,4 @@
-(ns instaparse-c.typedef
+(ns instaparse-c.grammar.typedef
   (:refer-clojure :exclude [cat string?])
   (:require 
    [instaparse.combinators :refer :all]

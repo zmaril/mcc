@@ -1,5 +1,6 @@
 (ns instaparse-c.bundle
   (:require
+   [instaparse-c.preprocessor :refer [clean-preprocess]]
    [clojure.string :refer [split-lines trim join]]
    [clojure.core.match :refer [match]]))
 

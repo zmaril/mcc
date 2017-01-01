@@ -1,5 +1,5 @@
 
-(ns instaparse-c.symbol
+(ns instaparse-c.grammar.symbol
   (:refer-clojure :exclude [cat comment string? symbol])
   (:require
    [instaparse.combinators :refer :all]

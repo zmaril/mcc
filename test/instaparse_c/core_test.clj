@@ -1,6 +1,6 @@
 (ns instaparse-c.core-test
   (:require [clojure.test :refer :all]
-            [instaparse-c.core :as c]
+            [instaparse-c.parse :as c]
             [instaparse.core :as insta]
             [clojure.data :as data]
             [clojure.java.io :refer [file]]

@@ -1,63 +1,17 @@
 (ns instaparse-c.core
-  (:refer-clojure :exclude [cat comment struct do])
+  (:refer-clojure :exclude [cat comment struct do printf])
   (:require
    [clojure.string :refer [split-lines trim join]]
    [clojure.spec :as s]
-   [instaparse.combinators :refer :all]
-   [instaparse.core :as insta]
-   [instaparse-c.grammar :refer [grammar]]
-   [instaparse-c.comment :refer [comment]]
+   [instaparse-c.parse :refer [clean-parse]]
    [instaparse-c.bundle :refer [into-bundles]]
-   [instaparse-c.chunk  :refer [into-chunks]]
+   [instaparse-c.chunk  :refer [into-chunks produce-text produce-strings]]
    [instaparse-c.datascript  :refer [enlive-output->datascript-datums schema]]
    [instaparse-c.expression :refer [remove-cruft]]
    [instaparse-c.util :refer [altnt cart]]
    [clojure.data :refer [diff]]
    [com.rpl.specter :refer :all]
    [datascript.core :as d]))
-
-(def preprocessor-whitespace
-  {:mcc.macro/whitespace (plus (regexp "([ \t]|(\\\\\n))+"))})
-
-(def preprocess
-  (insta/parser grammar
-                :start :mcc/macro
-                :auto-whitespace
-                (insta/parser preprocessor-whitespace
-                              :start :mcc.macro/whitespace)))
-
-(def clean-preprocess
-   (comp remove-cruft preprocess))
-
-(insta/set-default-output-format! :enlive)
-
-(def whitespace
-  (merge comment
-         {:mcc/whitespace
-          (plus (altnt :mcc.whitespace/characters :mcc/comment))
-          :mcc.whitespace/characters
-          (regexp "[\\s]+")}))
-
-(def parse
-  (insta/parser grammar
-                :start :mcc/start
-                :auto-whitespace
-                (insta/parser whitespace
-                              :start :mcc/whitespace)))
-
-(defn clean-parse [& args]
-  (let [parsed (apply parse args)
-        parsed (insta/add-line-and-column-info-to-metadata (first args) parsed)]
-    (if (insta/failure? parsed)
-      parsed
-      (remove-cruft parsed))))
-
-(defn clean-parses [& args]
-  (let [parsed (apply insta/parses (cons parse args))]
-    (map remove-cruft parsed)))
-
-;;;Developing code
-
 
 (def testtest (slurp  "dev-resources/corpus/openssh-portable/testtest.c"))
 

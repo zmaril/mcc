@@ -1,11 +1,10 @@
-(ns instaparse-c.preprocessor
+(ns instaparse-c.grammar.directive
   (:refer-clojure :exclude [cat comment string?])
   (:require
    [instaparse.combinators :refer :all]
-   [instaparse-c.util :refer :all]
-   [instaparse-c.expression :refer [remove-cruft]]))
+   [instaparse-c.util :refer :all]))
 
-(def preprocessor
+(def directive
   {
    :mcc/macro
    (altnt :mcc.macro/define :mcc.macro/if :mcc.macro/ifdef :mcc.macro/include

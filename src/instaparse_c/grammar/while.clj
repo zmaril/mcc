@@ -1,4 +1,4 @@
-(ns instaparse-c.while
+(ns instaparse-c.grammar.while
   (:refer-clojure :exclude [cat comment function if while string?])
   (:require 
    [instaparse.combinators :refer :all]

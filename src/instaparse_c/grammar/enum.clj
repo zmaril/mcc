@@ -1,4 +1,4 @@
-(ns instaparse-c.enum
+(ns instaparse-c.grammar.enum
   (:refer-clojure :exclude [cat string?])
   (:require 
    [instaparse.combinators :refer :all]

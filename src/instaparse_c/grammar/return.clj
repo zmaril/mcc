@@ -1,4 +1,4 @@
-(ns instaparse-c.return
+(ns instaparse-c.grammar.return
   (:refer-clojure :exclude [cat comment function string?])
   (:require 
    [instaparse.combinators :refer :all]

@@ -1,4 +1,4 @@
-(ns instaparse-c.data-type 
+(ns instaparse-c.grammar.data-type 
   (:refer-clojure :exclude [cat comment string?])
   (:require 
    [instaparse.combinators :refer :all]

@@ -1,4 +1,4 @@
-(ns instaparse-c.switch
+(ns instaparse-c.grammar.switch
   (:refer-clojure :exclude [cat comment function if while string?])
   (:require 
    [instaparse.combinators :refer :all]
