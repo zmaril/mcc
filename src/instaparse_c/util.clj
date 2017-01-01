@@ -39,3 +39,10 @@
 
 (defn list-of? [c]
   (opt (list-of c)))
+
+(defn cart [colls]
+   (if (empty? colls)
+     '(())
+     (for [x (first colls)
+           more (cart (rest colls))]
+       (cons x more))))
