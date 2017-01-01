@@ -17,7 +17,7 @@
    [mcc.grammar.if :refer [if]]
    [mcc.grammar.literal :refer [literal]]
    [mcc.grammar.macro :refer [macro]]
-   [mcc.grammar.preprocessor :refer [preprocessor]]
+   [mcc.grammar.directive :refer [directive]]
    [mcc.grammar.return :refer [return]]
    [mcc.grammar.struct :refer [struct]]
    [mcc.grammar.switch :refer [switch]]
@@ -31,7 +31,7 @@
                 data-type
                 expression
                 literal
-                preprocessor
+                directive
                 symbol])
 
 

@@ -7,13 +7,12 @@
    [mcc.bundle :refer [into-bundles]]
    [mcc.chunk  :refer [into-chunks produce-text produce-strings]]
    [mcc.datascript  :refer [enlive-output->datascript-datums schema]]
-   [mcc.expression :refer [remove-cruft]]
    [mcc.util :refer [altnt cart]]
    [clojure.data :refer [diff]]
    [com.rpl.specter :refer :all]
    [datascript.core :as d]))
 
-(def testtest (slurp  "dev-resources/corpus/openssh-portable/testtest.c"))
+(def testtest (slurp  "dev-resources/sample.c"))
 
 (def bundled (into-bundles testtest))
 (def tags (map :type bundled))
