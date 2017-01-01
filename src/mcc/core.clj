@@ -12,28 +12,25 @@
    [com.rpl.specter :refer :all]
    [datascript.core :as d]))
 
+#_(map join (cart (map produce-text chunked)))
+#_(s/explain :mcc/bundles bundled)
+#_(s/conform :mcc/bundles bundled)
+#_(s/explain (s/* :mcc/chunked) bundled)
+#_(s/conform (s/* :mcc/chunked) bundled)
+#_(apply diff (map clean-parse (produce-strings chunked)))
+
 (defn string->db [s]
-  (let [chunked (-> s into-bundles into-chunks)]))
+  (let [chunked (-> s into-bundles into-chunks)
+        parsed  (clean-parse (first (produce-strings chunked)))
+        datums  (enlive-output->datascript-datums parsed)
+        db      (d/create-conn schema)]
+       (d/transact! db [datums])
+       db))
+
+;;Dev code
 (def sample (slurp  "dev-resources/sample.c"))
+(def db (string->db sample))
 
-(def bundled (into-bundles sample))
-(def chunked (into-chunks bundled))
-(map join (cart (map produce-text chunked)))
-
-(s/explain :mcc/bundles bundled)
-(s/conform :mcc/bundles bundled)
-
-(s/explain (s/* :mcc/chunked) bundled)
-(s/conform (s/* :mcc/chunked) bundled)
-
-(apply diff (map clean-parse (produce-strings chunked)))
-
-(def parsed
- (clean-parse (first (produce-strings chunked))))
-
-(def datums-sample (enlive-output->datascript-datums parsed))
-(def conn (d/create-conn schema))
-(d/transact! conn [datums-sample])
 (d/q '[:find  ?prize
        :where [?value :value "printf"]
               [?symbol :content ?value]
@@ -43,4 +40,4 @@
               [?args :content ?temp1]
               [?temp1 :content ?temp2]
               [?temp2 :value ?prize]]
-     @conn)
+     @db)
