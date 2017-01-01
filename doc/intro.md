@@ -1,3 +1,3 @@
-# Introduction to instaparse-c
+# Introduction to mcc
 
 TODO: write [great documentation](http://jacobian.org/writing/what-to-write/)

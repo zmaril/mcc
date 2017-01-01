@@ -1,4 +1,4 @@
-(defproject instaparse-c "0.1.0-SNAPSHOT"
+(defproject mcc "0.1.0-SNAPSHOT"
   :description "Library for parsing C programs with instaparse"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"

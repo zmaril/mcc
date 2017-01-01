@@ -1,4 +1,4 @@
-# instaparse-c
+# mcc
 
 Parse C with Instaparse.
 
