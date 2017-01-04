@@ -1,17 +1,12 @@
-
-
-/* Hello World program */
-
-/*#include<stdio.h>*/
-
-int main()
-{
-
-#if defined \
-  (HAVE_STRNVIS)
-  printf("Hello World");
+a();
+#if COND1 \
++1
+b();
+#elif test
+c();
+#else
+d();
 #endif
-  printf("Hello World");
-  printf("HELLO PAUL");
-
-}
+e();
+f();
+printf("a");

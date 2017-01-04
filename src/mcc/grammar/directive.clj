@@ -1,3 +1,4 @@
+
 (ns mcc.grammar.directive
   (:refer-clojure :exclude [cat comment string?])
   (:require
@@ -8,8 +9,7 @@
   {
    :mcc/macro
    (altnt :mcc.macro/define :mcc.macro/if :mcc.macro/ifdef :mcc.macro/include
-          :mcc.macro/else :mcc.macro/endif)
-
+          :mcc.macro/else :mcc.macro/endif :mcc.macro/ifndef :mcc.macro/elif)
    :mcc.macro/define
    (cat (hs "#" "define")
         (altnt :mcc.macro.define/value :mcc.macro.define/function))
@@ -25,6 +25,10 @@
                   (hs "#" "if")
                   (nt :mcc/expression))
 
+   :mcc.macro/elif (cat
+                    (hs "#" "elif")
+                    (nt :mcc/expression))
+
    :mcc.macro/else (hs "#" "else")
    :mcc.macro/endif (hs "#" "endif")
 
@@ -32,6 +36,9 @@
    :mcc.macro/ifdef (cat
                      (hs "#" "ifdef")
                      (nt :mcc/expression))
+   :mcc.macro/ifndef (cat
+                      (hs "#" "ifndef")
+                      (nt :mcc/expression))
 
    :mcc.macro/include
    (altnt :mcc.macro.include/header :mcc.macro.include/source)

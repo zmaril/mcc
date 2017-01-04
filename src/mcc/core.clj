@@ -41,3 +41,18 @@
               [?temp1 :content ?temp2]
               [?temp2 :value ?prize]]
      @db)
+
+(defn sampled [s]
+  (let [chunked (-> s into-bundles into-chunks)
+        parsed  (map clean-parse (produce-strings chunked))
+        datums  (map enlive-output->datascript-datums parsed)]
+   chunked))
+
+#_(let [{:keys [:instaparse.gll/start-line]}]
+      (meta (nth (sampled sample) 1))
+     start-line)
+
+(-> sample into-bundles into-chunks first)
+(def static (->> sample into-bundles into-chunks rest first))
+
+(-> sample into-bundles into-chunks produce-strings)

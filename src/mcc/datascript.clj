@@ -9,7 +9,13 @@
  (cond
     (map? m)
     (as-> m $
-        #_(assoc $ :meta (meta m))
+        (let [{:keys [:instaparse.gll/start-index  :instaparse.gll/end-index
+                      :instaparse.gll/start-line   :instaparse.gll/end-line
+                      :instaparse.gll/start-column :instaparse.gll/end-column]}
+              (meta m)]
+          (assoc $ :location {:index  [start-index end-index]
+                              :line   [start-line  end-line]
+                              :column [start-column end-column]}))
         (assoc $ :db/id (d/tempid :mcc))
         (transform [:content ALL] enlive-output->datascript-datums $))
 
@@ -20,7 +26,7 @@
       (fn [i v] (-> v enlive-output->datascript-datums (assoc :order i)))
       (rest m))}
 
-    :default {:db/id (d/tempid :mcc) :type :value :value m}))
+    :default {#_:db/id #_(d/tempid :mcc) :type :value :value m}))
 
 (def schema
  {:content {:db/cardinality :db.cardinality/many

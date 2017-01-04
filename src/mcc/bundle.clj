@@ -11,12 +11,14 @@
         parsed (clean-preprocess text)]
        {:mcc.bundle/type (first (second parsed))
         :mcc.bundle/text text
-        :mcc.bundle/parsed parsed}))
+        :mcc.bundle/parsed parsed
+        :mcc.bundle/number-of-lines (count lines)}))
 
 
 (defmethod convert-bundle :not-macro [{:keys [lines]}]
  {:mcc.bundle/type :mcc.bundle/raw-text
-  :mcc.bundle/text (join "\n" lines)})
+  :mcc.bundle/text (join "\n" lines)
+  :mcc.bundle/number-of-lines (count lines)})
 
 (defmethod convert-bundle nil [_] nil)
 
