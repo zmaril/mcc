@@ -4,7 +4,7 @@
    [clojure.string :refer [split-lines trim join]]
    [clojure.spec :as s]
    [mcc.parse :refer [clean-parse]]
-   [mcc.bundle :refer [into-bundles]]
+   [mcc.bundle :refer [into-bundles into-bundles2]]
    [mcc.chunk  :refer [into-chunks produce-text produce-strings]]
    [mcc.datascript  :refer [enlive-output->datascript-datums schema]]
    [mcc.util :refer [altnt cart]]
@@ -29,19 +29,24 @@
 
 ;;Dev code
 (def sample (slurp  "dev-resources/sample.c"))
-(def db (string->db sample))
+#_(def db (string->db sample))
 
-(d/q '[:find  ?prize
-       :where [?value :value "printf"]
+#_(d/q '[:find  ?prize]
+       :where [?value :value "e"]
               [?symbol :content ?value]
               [?fun-call :content ?symbol]
               [?fun-call :content ?args]
               [?args :order 1]
               [?args :content ?temp1]
               [?temp1 :content ?temp2]
-              [?temp2 :value ?prize]]
+              [?temp2 :value ?prize]
      @db)
 
+#_(d/q '[:find  ?fun-call]
+       :where [?value :value "printf"]
+              [?symbol :content ?value]
+              [?fun-call :content ?symbol]
+     @db)
 (defn sampled [s]
   (let [chunked (-> s into-bundles into-chunks)
         parsed  (map clean-parse (produce-strings chunked))
@@ -52,7 +57,7 @@
       (meta (nth (sampled sample) 1))
      start-line)
 
-(-> sample into-bundles into-chunks first)
-(def static (->> sample into-bundles into-chunks rest first))
+#_(-> sample into-bundles into-chunks first)
+#_(def static (->> sample into-bundles into-chunks rest first))
 
-(-> sample into-bundles into-chunks produce-strings)
+#_(-> sample into-bundles into-chunks produce-strings)

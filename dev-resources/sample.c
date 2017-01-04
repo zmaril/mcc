@@ -7,6 +7,7 @@ c();
 #else
 d();
 #endif
-e();
-f();
+e("f");
+f("c");
 printf("a");
+printf("b");

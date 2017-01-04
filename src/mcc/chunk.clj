@@ -5,39 +5,23 @@
    [mcc.util :refer [cart]]
    [clojure.spec :as s]))
 
-(s/def :mcc.bundle/type
-       #{:mcc.macro/if
-         :mcc.macro/ifdef
-         :mcc.macro/ifndef
-         :mcc.macro/elif
-         :mcc.macro/else
-         :mcc.macro/endif
-         :mcc.bundle/raw-text
-         :mcc.macro/include
-         :mcc.macro/define})
-
-(s/def :mcc.bundle/text string?)
-(s/def :mcc.bundle/parsed vector?) ;;TODO
-(s/def :mcc/bundle (s/keys :req [:mcc.bundle/type :mcc.bundle/text]
-                           :opt [:mcc.bundle/parsed]))
-
 (defn bundle-of [tags]
-     (s/and :mcc/bundle
+     (s/and :mcc.bundle/bundle
             (fn [bundle] (-> bundle :mcc.bundle/type tags boolean))))
 
 (s/def ::static-conditional
-   (s/cat ::conditional
+   (s/cat ::if
           (s/cat ::conditional
                  (bundle-of #{:mcc.macro/if :mcc.macro/ifdef
                               :mcc.macro/ifndef})
                  ::chunks (s/* :mcc/chunked))
           ::elif
           (s/*
-           (s/cat :elif (bundle-of #{:mcc.macro/elif})
+           (s/cat :conditional (bundle-of #{:mcc.macro/elif})
                   ::chunks (s/* :mcc/chunked)))
           ::else
           (s/?
-             (s/cat :else (bundle-of #{:mcc.macro/else})
+             (s/cat :conditional (bundle-of #{:mcc.macro/else})
                     ::chunks (s/* :mcc/chunked)))
           ::endif (bundle-of #{:mcc.macro/endif})))
 
@@ -50,7 +34,7 @@
 
 (s/def :mcc/chunked
        (s/alt :mcc.bundle/not-static-conditional ::not-static-conditional
-             :mcc.bundle/static-conditional     ::static-conditional))
+              :mcc.bundle/static-conditional     ::static-conditional))
 
 (s/def :mcc/bundles  (s/* :mcc/bundle))
 
