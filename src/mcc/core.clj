@@ -4,32 +4,28 @@
    [clojure.string :refer [split-lines trim join]]
    [clojure.spec :as s]
    [mcc.parse :refer [clean-parse]]
-   [mcc.bundle :refer [into-bundles into-bundles2]]
-   [mcc.chunk  :refer [into-chunks produce-text produce-strings]]
+   [mcc.bundle :refer [into-bundles]]
+   [mcc.chunk  :refer [into-chunks]]
+   [mcc.produce :refer [produce-text produce-strings]]
    [mcc.datascript  :refer [enlive-output->datascript-datums schema]]
    [mcc.util :refer [altnt cart]]
    [clojure.data :refer [diff]]
    [com.rpl.specter :refer :all]
    [datascript.core :as d]))
 
-#_(map join (cart (map produce-text chunked)))
-#_(s/explain :mcc/bundles bundled)
-#_(s/conform :mcc/bundles bundled)
-#_(s/explain (s/* :mcc/chunked) bundled)
-#_(s/conform (s/* :mcc/chunked) bundled)
-#_(apply diff (map clean-parse (produce-strings chunked)))
-
 (defn string->db [s]
   (let [chunked (-> s into-bundles into-chunks)
-        parsed  (clean-parse (first (produce-strings chunked)))
+        lines   (first (produce-strings chunked))
+        parsed  (clean-parse)
         datums  (enlive-output->datascript-datums parsed)
         db      (d/create-conn schema)]
        (d/transact! db [datums])
        db))
 
 ;;Dev code
-(def sample (slurp  "dev-resources/sample.c"))
-#_(def db (string->db sample))
+(def sample (slurp  "/home/zmaril/software/postgres/src/backend/access/transam/xlog.c"))
+#(def sample (slurp  "dev-resources/corpus/openssh-portable/auth.c"))
+#(def db (string->db sample))
 
 #_(d/q '[:find  ?prize]
        :where [?value :value "e"]
@@ -60,4 +56,4 @@
 #_(-> sample into-bundles into-chunks first)
 #_(def static (->> sample into-bundles into-chunks rest first))
 
-#_(-> sample into-bundles into-chunks produce-strings)
+(->> sample into-bundles into-chunks (map produce-text))

@@ -1,6 +1,6 @@
 (ns mcc.grammar.comment
   (:refer-clojure :exclude [cat comment string?])
-  (:require 
+  (:require
    [instaparse.combinators :refer :all]
    [mcc.util :refer :all]))
 

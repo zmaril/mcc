@@ -12,7 +12,6 @@
   (let [text (join "\n" (map second lines))
         parsed (clean-preprocess text)]
        {:mcc.bundle/type (first (second parsed))
-        :mcc.bundle/parsed parsed
         :mcc.bundle/lines lines}))
 
 

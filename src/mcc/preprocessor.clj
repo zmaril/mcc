@@ -4,10 +4,14 @@
    [instaparse.core :as insta]
    [instaparse.combinators :refer :all]
    [mcc.grammar.core :refer [grammar]]
+   [mcc.grammar.comment :refer [comment]]
    [mcc.grammar.expression :refer [remove-cruft]]))
 
 (def preprocessor-whitespace
-  {:mcc.macro/whitespace (plus (regexp "([ \t]|(\\\\\n))+"))})
+ (merge
+  comment
+  {:mcc.macro/whitespace (plus (alt (nt :mcc/comment)
+                                 (regexp "([ \t]|(\\\\\n))+")))}))
 
 (def preprocess
   (insta/parser grammar

@@ -45,4 +45,4 @@
    :mcc.macro.include/header
    (cat (hs "#" "include" "<") (regexp "[a-z0-9/]+\\.h") (hs ">"))
    :mcc.macro.include/source
-   (cat (hs "#" "include" "\"") (regexp "[a-z0-9/]+\\.h") (hs "\""))})
+   (cat (hs "#" "include" "\"") (regexp "[a-z0-9/\\-_]+\\.h") (hs "\""))})
